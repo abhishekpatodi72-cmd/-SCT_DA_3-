@@ -1,0 +1,48 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Set style and background
+sns.set_theme(style="darkgrid")
+plt.rcParams['figure.facecolor'] = '#f0f0f0'
+
+# 1. Load the Data
+df = pd.read_csv('WA_Fn-UseC_-HR-Employee-Attrition.csv')
+
+# 2. Basic Metrics
+attrition_rate = (df['Attrition'] == 'Yes').mean() * 100
+total_employees = len(df)
+attrition_count = (df['Attrition'] == 'Yes').sum()
+
+# 3. Create Dashboard Layout (2x2 Grid)
+fig, axes = plt.subplots(2, 2, figsize=(16, 12))
+fig.suptitle('HR Employee Attrition Analytics Dashboard', fontsize=24, fontweight='bold', y=0.98)
+
+# Chart A: Attrition by Department
+sns.countplot(data=df, x='Department', hue='Attrition', ax=axes[0, 0], palette='viridis')
+axes[0, 0].set_title('Attrition by Department', fontsize=16)
+
+# Chart B: Gender Distribution
+gender_counts = df['Gender'].value_counts()
+axes[0, 1].pie(gender_counts, labels=gender_counts.index, autopct='%1.1f%%', startangle=140, colors=['#3498db', '#e74c3c'])
+axes[0, 1].set_title('Workforce Gender Distribution', fontsize=16)
+
+# Chart C: Age vs Attrition
+sns.histplot(data=df, x='Age', hue='Attrition', kde=True, ax=axes[1, 0], palette='magma', multiple='stack')
+axes[1, 0].set_title('Age Distribution vs Attrition', fontsize=16)
+
+# Chart D: Attrition Rate by Education Field
+edu_attrition = df.groupby('EducationField')['Attrition'].value_counts(normalize=True).unstack().sort_values(by='Yes', ascending=False)
+edu_attrition['Yes'].plot(kind='bar', ax=axes[1, 1], color='#e67e22')
+axes[1, 1].set_title('Attrition % by Education Field', fontsize=16)
+axes[1, 1].set_ylabel('Attrition Rate')
+
+# 4. Add KPI Text Overlays
+plt.figtext(0.15, 0.92, f"Total Employees: {total_employees}", fontsize=14, fontweight='bold', color='blue')
+plt.figtext(0.45, 0.92, f"Attrition Count: {attrition_count}", fontsize=14, fontweight='bold', color='red')
+plt.figtext(0.75, 0.92, f"Attrition Rate: {attrition_rate:.1f}%", fontsize=14, fontweight='bold', color='purple')
+
+# 5. Final Adjustments and Save
+plt.tight_layout(rect=[0, 0.03, 1, 0.95])
+plt.savefig('hr_analytics_dashboard.png')
+print("Dashboard generated successfully!")
